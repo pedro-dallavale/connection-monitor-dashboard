@@ -1,0 +1,63 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.cards {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+article {
+  background: #1e293b;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+article h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+article p {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #334155;
+  text-align: left;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #1e293b;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 8px;
+}
