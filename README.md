@@ -1,82 +1,77 @@
-# connection-monitor-dashboard
+# C9 Monitor Enterprise — Node.js/Express
 
-Dashboard web em FastAPI para monitoramento em tempo real de conexões PM2 via SSH.
+Versão JavaScript do `main.py` original (FastAPI/Python).
 
-## Funcionalidades
-- Coleta contínua de logs via SSH (`pm2 logs --raw`).
-- Parse de eventos `Usuario conectou`.
-- Métricas de monitoramento em endpoint JSON.
-- Interface web simples para operação (auto-refresh a cada 5s).
-
-## Variáveis de ambiente
-- `MONITOR_SSH_HOST`
-- `MONITOR_SSH_PORT` (padrão: `3022`)
-- `MONITOR_SSH_USER`
-- `MONITOR_SSH_KEY_PATH` (padrão: `./credentials/key`)
-- `MONITOR_SSH_KNOWN_HOSTS` (padrão: `./credentials/known_hosts`)
-- `MONITOR_PM2_PROCESS` (padrão: `0`)
-- `MONITOR_PM2_SNAPSHOT_LINES` (padrão: `5000`)
-- `MONITOR_HISTORY_LIMIT` (padrão: `2000`)
-
-## Execução
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install fastapi uvicorn paramiko
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-> Se quiser usar renderização por templates, instale também `jinja2`.
-
-Acesse `http://localhost:8000`.
-
-## Como testar
-
-### 1) Preparar ambiente
-Configure variáveis reais antes de subir:
+## Instalação
 
 ```bash
-export MONITOR_SSH_HOST="seu-host"
-export MONITOR_SSH_PORT=3022
-export MONITOR_SSH_USER="seu-usuario"
-export MONITOR_SSH_KEY_PATH="./credentials/key"
-export MONITOR_PM2_PROCESS=0
+npm install
+npm start
+# ou para desenvolvimento com auto-reload:
+npm run dev
 ```
 
-No Windows PowerShell:
+Dashboard: http://127.0.0.1:8000/
 
+---
+
+## Estrutura do Projeto
+
+```
+c9monitor/
+├── server.js       ← equivalente ao main.py
+└── package.json
+```
+
+> O arquivo `monitor.py` (que exportava `events_snapshot`, `pending_connections`, etc.)
+> foi substituído pelo objeto `state` interno ao `server.js`.
+> Conecte seu código de monitoramento SSH/PM2 via **POST /api/events** e **POST /api/alerts**.
+
+---
+
+## Mapeamento Python → JavaScript
+
+| Python (FastAPI)                    | JavaScript (Express)                |
+|-------------------------------------|-------------------------------------|
+| `FastAPI()`                         | `express()`                         |
+| `@app.get("/rota")`                 | `app.get('/rota', handler)`         |
+| `HTMLResponse`                      | `res.send(html)`                    |
+| `JSONResponse({...})`               | `res.json({...})`                   |
+| `threading.Lock()`                  | Estado em memória (single-thread)   |
+| `deque(maxlen=500)`                 | Array com `shift()` ao atingir 500  |
+| `Counter()`                         | Função `counter()` local            |
+| `threading.Thread(target=...).start()` | `setInterval()` / workers Node.js|
+| `uvicorn.run(app, host=..., port=...)`  | `app.listen(PORT, host)`          |
+| `datetime.now().strftime(...)`      | `new Date()` + formatação manual    |
+| `Query` params FastAPI              | `req.query.empresa`, `req.query.usuario` |
+
+---
+
+## Endpoints disponíveis
+
+### Páginas HTML
+| Rota         | Descrição                     |
+|--------------|-------------------------------|
+| `GET /`      | Dashboard principal           |
+| `GET /conexoes` | Lista de conexões (filtrável) |
+| `GET /alertas`  | Centro de alertas           |
+| `GET /relatorios` | Relatórios e rankings     |
+| `GET /logs`     | Logs pendentes              |
+| `GET /sistema`  | Status do sistema           |
+
+### API JSON
+| Rota               | Método | Descrição                          |
+|--------------------|--------|------------------------------------|
+| `/api/time`        | GET    | Hora atual                         |
+| `/api/stats`       | GET    | Estatísticas gerais                |
+| `/api/pending`     | GET    | Conexões pendentes                 |
+| `/api/ping`        | GET    | Health check                       |
+| `/api/events`      | POST   | Inserir novo evento de conexão     |
+| `/api/alerts`      | POST   | Criar novo alerta                  |
+
+### Exemplo: inserir evento via API
 ```bash
-$env:MONITOR_SSH_HOST="seu-host"
-$env:MONITOR_SSH_PORT="3022"
-$env:MONITOR_SSH_USER="seu-usuario"
-$env:MONITOR_SSH_KEY_PATH="./credentials/key"
-$env:MONITOR_PM2_PROCESS="0"
+curl -X POST http://127.0.0.1:8000/api/events \
+  -H "Content-Type: application/json" \
+  -d '{"company": "Acme Ltda", "user": "joao.silva", "timestamp": "2025-01-01 09:30:00"}'
 ```
-
-### 2) Subir API e dashboard
-
-```bash
-uvicorn main:app --reload
-```
-
-### 3) Validar API
-
-```bash
-curl -s http://localhost:8000/api/metrics | python -m json.tool
-```
-
-### 4) Se aparecer `ModuleNotFoundError: No module named 'app'`
-- Execute o comando dentro da pasta do projeto (onde está o `main.py`).
-- Prefira `uvicorn main:app` em vez de `uvicorn app.main:app`.
-
-### 5) Se aparecer `Unable to connect to port ...`
-- Confira host/porta: por padrão o monitor usa `MONITOR_SSH_PORT=3022`.
-- Exemplo PowerShell:
-
-```bash
-$env:MONITOR_SSH_HOST="gate.paas.saveincloud.net.br"
-$env:MONITOR_SSH_PORT="3022"
-$env:MONITOR_SSH_USER="120135-9214"
-```
-
-- Verifique também firewall/VPN e se a chave privada em `MONITOR_SSH_KEY_PATH` está correta.
