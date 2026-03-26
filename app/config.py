@@ -5,7 +5,7 @@ import os
 @dataclass(frozen=True)
 class Config:
     host: str = field(default_factory=lambda: os.getenv("MONITOR_SSH_HOST", ""))
-    port: int = field(default_factory=lambda: int(os.getenv("MONITOR_SSH_PORT", "22")))
+    port: int = field(default_factory=lambda: int(os.getenv("MONITOR_SSH_PORT", "3022")))
     user: str = field(default_factory=lambda: os.getenv("MONITOR_SSH_USER", ""))
     key_path: str = field(default_factory=lambda: os.getenv("MONITOR_SSH_KEY_PATH", "./credentials/key"))
     known_hosts_path: str = field(default_factory=lambda: os.getenv("MONITOR_SSH_KNOWN_HOSTS", "./credentials/known_hosts"))

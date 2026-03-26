@@ -12,7 +12,12 @@ app = FastAPI(title="Connection Monitor Dashboard", version="1.0.0")
 monitor = ConnectionMonitor()
 
 base_dir = Path(__file__).resolve().parent
-templates = Jinja2Templates(directory=str(base_dir / "templates"))
+templates: Jinja2Templates | None
+try:
+    templates = Jinja2Templates(directory=str(base_dir / "templates"))
+except AssertionError:
+    templates = None
+
 app.mount("/static", StaticFiles(directory=str(base_dir / "static")), name="static")
 
 
@@ -28,6 +33,9 @@ async def shutdown_event() -> None:
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request) -> HTMLResponse:
+    if templates is None:
+        html = (base_dir / "templates" / "dashboard.html").read_text(encoding="utf-8")
+        return HTMLResponse(content=html)
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
 

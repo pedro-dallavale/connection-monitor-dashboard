@@ -53,6 +53,9 @@ class ConnectionMonitor:
         }
 
     def _create_ssh_client(self) -> pk.SSHClient:
+        if not CFG.host or not CFG.user:
+            raise ValueError("Configuração SSH incompleta: defina MONITOR_SSH_HOST e MONITOR_SSH_USER")
+
         ssh = pk.SSHClient()
 
         if os.path.exists(CFG.known_hosts_path):
@@ -116,7 +119,8 @@ class ConnectionMonitor:
             except Exception as exc:
                 self._status = "error"
                 self._last_error = f"{exc}"
-                logging.error("Erro no stream SSH: %s\n%s", exc, traceback.format_exc())
+                logging.error("Erro no stream SSH: %s", exc)
+                logging.debug("Traceback stream SSH:\n%s", traceback.format_exc())
             finally:
                 if ssh:
                     try:

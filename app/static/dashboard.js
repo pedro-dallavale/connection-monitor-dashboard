@@ -4,6 +4,7 @@ async function refresh() {
     const data = await response.json();
 
     document.getElementById('status').textContent = data.status || '-';
+    document.getElementById('last_error').textContent = data.last_error || 'Sem erros.';
     document.getElementById('total_events').textContent = data.total_events ?? 0;
     document.getElementById('unique_users').textContent = data.unique_users ?? 0;
     document.getElementById('unique_companies').textContent = data.unique_companies ?? 0;

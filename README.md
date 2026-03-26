@@ -10,7 +10,7 @@ Dashboard web em FastAPI para monitoramento em tempo real de conexões PM2 via S
 
 ## Variáveis de ambiente
 - `MONITOR_SSH_HOST`
-- `MONITOR_SSH_PORT` (padrão: `22`)
+- `MONITOR_SSH_PORT` (padrão: `3022`)
 - `MONITOR_SSH_USER`
 - `MONITOR_SSH_KEY_PATH` (padrão: `./credentials/key`)
 - `MONITOR_SSH_KNOWN_HOSTS` (padrão: `./credentials/known_hosts`)
@@ -22,9 +22,11 @@ Dashboard web em FastAPI para monitoramento em tempo real de conexões PM2 via S
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install fastapi uvicorn paramiko jinja2
+pip install fastapi uvicorn paramiko
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
+
+> Se quiser usar renderização por templates, instale também `jinja2`.
 
 Acesse `http://localhost:8000`.
 
@@ -66,3 +68,15 @@ curl -s http://localhost:8000/api/metrics | python -m json.tool
 ### 4) Se aparecer `ModuleNotFoundError: No module named 'app'`
 - Execute o comando dentro da pasta do projeto (onde está o `main.py`).
 - Prefira `uvicorn main:app` em vez de `uvicorn app.main:app`.
+
+### 5) Se aparecer `Unable to connect to port ...`
+- Confira host/porta: por padrão o monitor usa `MONITOR_SSH_PORT=3022`.
+- Exemplo PowerShell:
+
+```bash
+$env:MONITOR_SSH_HOST="gate.paas.saveincloud.net.br"
+$env:MONITOR_SSH_PORT="3022"
+$env:MONITOR_SSH_USER="120135-9214"
+```
+
+- Verifique também firewall/VPN e se a chave privada em `MONITOR_SSH_KEY_PATH` está correta.
